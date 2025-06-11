@@ -9,6 +9,7 @@ import fs from "fs";
         api_secret: process.env.cloudinary_api_secret
     });
 
+    //function to upload file on cloudinary with conditions
 const uploadonCloudinary = async (localfilePath) => {
     try {
         if(!localfilePath) return null;
