@@ -1,14 +1,15 @@
+import "dotenv/config";
 import {v2 as cloudinary} from "cloudinary";
 import fs from "fs";
 
-
+      
     // Configuration
     cloudinary.config({ 
-        cloud_name: process.env.cloudinary_cloud_name, 
-        api_key: process.env.cloudinary_api_key, 
-        api_secret: process.env.cloudinary_api_secret
+        cloud_name : process.env.CLOUDINARY_CLOUD_NAME, 
+        api_key : process.env.CLOUDINARY_API_KEY, 
+        api_secret : process.env.CLOUDINARY_API_SECRET
     });
-
+ 
     //function to upload file on cloudinary with conditions
 const uploadonCloudinary = async (localfilePath) => {
     try {
@@ -18,13 +19,14 @@ const uploadonCloudinary = async (localfilePath) => {
             resource_type : "auto"
         })
         //file has been upload succesfully
-        console.log("file is uploaded on cloudinary");
-        console.log(response);
-        console.log(response.url);
+        // console.log("file is uploaded on cloudinary");
+        // console.log(response.url);
+        fs.unlinkSync(localfilePath);
         return response;
     } catch (error) {
-        fs.unlinkSync(localfilePath) //remove the locally saved temporary file got failed
+         console.log("Error while uploading",error);
+          fs.unlinkSync(localfilePath) //remove the locally saved temporary file got failed
+          return null;
     }
-
 }
 export { uploadonCloudinary }
