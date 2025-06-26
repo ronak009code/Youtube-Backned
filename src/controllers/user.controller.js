@@ -5,6 +5,7 @@ import { uploadonCloudinary } from '../utills/cloudinary.js';
 import { ApiResponse } from '../utills/ApiResponse.js';
 import jwt from 'jsonwebtoken';
 
+
 //simple method for creating access and refresh token from User model
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -107,7 +108,7 @@ const registerUser = asyncHandler( async (req,res) => {
      );
 })
 
-
+// Function/Method to login a user
 const loginUser = asyncHandler(async (req,res) => {
     // req body -> data
     // username or email
@@ -167,10 +168,7 @@ const loginUser = asyncHandler(async (req,res) => {
     )
 })
 
-
-
 // Function/Method to logout a user
-
 const logoutUser = asyncHandler(async (req,res) => {
     User.findByIdAndUpdate(
         req.user._id,
@@ -196,26 +194,28 @@ const logoutUser = asyncHandler(async (req,res) => {
     .json(new ApiResponse(200, {}, "User Logged Out"))
 })
 
-
+//  Function/Method to refresh access token
 const refreshAccessToken = asyncHandler(async (req,res) => {
     const incomingRefrshToken = req.cookies.refreshToken || req.body.refreshToken
 
-    if (incomingRefrshToken) {
+    if (!incomingRefrshToken) {
         throw new ApiError(401,"unauthorizedd request")
     }
 
      try {
+        // verify the incoming refresh token is valid or not
          const decodedToken = jwt.verify(
            incomingRefrshToken, 
            process.env.REFRESH_TOKEN_SECRET
         )
-   
+        // find the user from the decoded token
         const user = await User.findById(decodedToken?._id)
    
         if (!user) {
            throw new ApiError(401,"Invalid Refresh Token")
        }
-   
+    
+         // check if the incoming refresh token is same as the user's refresh token
         if (!incomingRefrshToken !== user?.refreshToken) {
            throw new ApiError(401," Refresh Token is expired or used")
        }
@@ -225,9 +225,11 @@ const refreshAccessToken = asyncHandler(async (req,res) => {
            secure : true
         }
    
+        // generate new access and refresh token
         const { accessToken, newrefreshToken} = await generateAccessAndRefreshToken(user._id)
    
    
+        // update the user's refresh token in the database
         return res
         .status(200)
         .cookie("accessToken",accessToken,options)
