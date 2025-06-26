@@ -247,21 +247,22 @@ const refreshAccessToken = asyncHandler(async (req,res) => {
      }
 })
 
+// Function/Method to change current user's password
 const changeCurrentPassword = asyncHandler(async (req,res) => {
-    const {oldpassword , newPassword} = req.body
+    const {oldpassword , newPassword} = req.body  // get old and new password from request body
 
     const user = await User.findById(req.user?._id)
 
-    const isPasswordcorrect = await user.isPasswordCorrect(oldpassword)
+    const isPasswordcorrect = await user.isPasswordCorrect(oldpassword) // check if old password is correct or not
 
     if (!isPasswordcorrect) {
         throw new ApiError(400, " Invalid old passworrd")
     }
 
-    user.password = newPassword
-    await user.save({validateBeforeSave : false})
+    user.password = newPassword  // set new password to user object
+    await user.save({validateBeforeSave : false})  // save the user object with new password
 
-    return res 
+    return res   // send response to frontend
     .status(200)
     .json(new ApiResponse(
         200,
@@ -271,20 +272,22 @@ const changeCurrentPassword = asyncHandler(async (req,res) => {
 })
 
 
+// Function/Method to get current user details
 const getCurrentUser = asyncHandler(async (req,res) => {
     return res
     .status(200)
     .json(200,req.user,"Curent User Fetched Successfully")
 })
 
+// Function/Method to update current user's account details
 const updateAccountDetails = asyncHandler(async (req,res) =>{
-    const {fullName ,email} = req.body
+    const {fullName , email} = req.body
 
-    if (!(fullName || email)) {
+    if (!(fullName || email)) { // check if fullName or email is provided
         throw new ApiError(402, "All fields are required")
     }
 
-   const user = await  User.findByIdAndUpdate(
+   const user = await  User.findByIdAndUpdate( // set new fullName and email to user object
         req.user?._id,
         {
             $set :{
@@ -293,37 +296,36 @@ const updateAccountDetails = asyncHandler(async (req,res) =>{
             }
         },
         {new : true}
-    ).select("-password")
+    ).select("-password") // remove password 
 
     return res
     .status(201)
     .json(new ApiResponse(201,user,"Account Details updated Successfully"))
 })
 
-
+// Function/Method to update current user's avatar
 const  updateUserAvatar = asyncHandler(async (req,res) => {
-    const avatarlocalpath = req.file?.path
+    const avatarlocalpath = req.file?.path // fetch avatar local path from request file
 
-
-if (!avatarlocalpath) {
+    if (!avatarlocalpath) {
     throw new ApiError(400,"Avatar File Is Missing")
-}
+  }
 
-const avatar = await uploadonCloudinary(avatarlocalpath)
+    const avatar = await uploadonCloudinary(avatarlocalpath) // upload avatar to cloudinary
 
-if (!avatar.url) {
-    throw new ApiError(400,"AError while uploading on avatar")
-}
+  if (!avatar.url) { 
+    throw new ApiError(400,"Error while uploading on avatar")
+   }
 
-const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-        $set : {
+   const user = await User.findByIdAndUpdate(
+      req.user?._id,  // set new avatar url to user object
+        {
+             $set : {
             avatar : avatar.url
         }
     },
-    {new : true}
-).select("-password")
+    {new : true} // to return the updated user object
+    ).select("-password")
 
  return res
   .status(200)
@@ -332,29 +334,30 @@ const user = await User.findByIdAndUpdate(
   )
 })
 
+// Function/Method to update current user's cover image
 const  updateUserCoverImage = asyncHandler(async (req,res) => {
     const coverimagelocalpath = req.file?.path
 
 
-if (!coverimagelocalpath) {
-    throw new ApiError(400,"coverimage File Is Missing")
-}
+     if (!coverimagelocalpath) {
+          throw new ApiError(400,"coverimage File Is Missing")
+    }
 
-const coverimage = await uploadonCloudinary(coverimagelocalpath)
+      const coverimage = await uploadonCloudinary(coverimagelocalpath)
 
-if (!coverimage.url) {
-    throw new ApiError(400,"Error while uploading on coverIamge")
-}
+     if (!coverimage.url) {
+         throw new ApiError(400,"Error while uploading on coverIamge")
+     }
 
-await User.findByIdAndUpdate(
-    req.user?._id,
-    {
+     await User.findByIdAndUpdate(
+       req.user?._id,
+      {
         $set : {
             coverImage : coverimage.url
         }
-    },
-    {new : true}
-).select("-password")
+       },
+       {new : true}
+   ).select("-password")
 
   return res
   .status(200)
