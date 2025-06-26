@@ -55,7 +55,7 @@ userSchema.pre("save", async function (next) {
 
       this.password = await bcrypt.hash(this.password, 10)
       next()
-})
+}) 
 
 //create userdefined methods for check passwor is modified or not before saving
 
@@ -66,10 +66,10 @@ userSchema.methods.isPasswordCorrect = async function
 
 //create access and refresh tokens
 
-userSchema.methods.generatraccessToken = function () {
+userSchema.methods.generateAccessToken = function () {
      return jwt.sign(
         {
-        _id : tis._id,
+        _id : this._id,
         username : this.username,
         email : this.email,
         fullName : this.fullName,
@@ -81,10 +81,10 @@ userSchema.methods.generatraccessToken = function () {
     )
 }
 
-userSchema.methods.generaterefreshToken = function (){
+userSchema.methods.generateRefreshToken = function (){
       return jwt.sign(
         {
-        _id : tis._id,
+        _id : this._id,
       
         },
      process.env.REFRESH_TOKEN_SECRET,

@@ -1,8 +1,10 @@
-import { ApiError } from "../utills/apiError";
-import { asyncHandler } from "../utills/asyncHandler";
+import { ApiError } from "../utills/apiError.js";
+import { asyncHandler } from "../utills/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import { User } from "../Models/user.models.js";
 
+
+// create  a middleware to verify JWT token
 export const verifyJWT = asyncHandler(async (req ,res ,next) => {
   try {
      const token =  req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer","")
@@ -15,7 +17,7 @@ export const verifyJWT = asyncHandler(async (req ,res ,next) => {
   
     const user =  await User.findById(decodedToken?._id).select("-password -refreshToken")
   
-     if (!user) {
+     if (!user) {   
         throw new ApiError(401,"Invalid Access Token");
      }
   
