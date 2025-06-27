@@ -276,7 +276,11 @@ const changeCurrentPassword = asyncHandler(async (req,res) => {
 const getCurrentUser = asyncHandler(async (req,res) => {
     return res
     .status(200)
-    .json(200,req.user,"Curent User Fetched Successfully")
+    .json(new ApiResponse(
+        200,
+        req.user,
+        "Curent User Fetched Successfully"
+    ))
 })
 
 // Function/Method to update current user's account details
@@ -326,6 +330,16 @@ const  updateUserAvatar = asyncHandler(async (req,res) => {
     },
     {new : true} // to return the updated user object
     ).select("-password")
+
+    // old avatar delete logic // optionally add by me
+      try {
+        if (user.avatar?.public_id) {
+          await cloudinary.uploader.destroy(user.avatar.public_id);
+       }
+      } catch (error) {
+        throw new ApiError(500," Error While Deletng the Old Avatar");
+      }
+
 
  return res
   .status(200)
