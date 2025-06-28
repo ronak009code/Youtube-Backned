@@ -4,7 +4,6 @@ import { User} from "../Models/user.models.js";
 import { uploadonCloudinary } from '../utills/cloudinary.js';
 import { ApiResponse } from '../utills/ApiResponse.js';
 import jwt from 'jsonwebtoken';
-import { use } from 'react';
 
 
 //simple method for creating access and refresh token from User model
@@ -382,6 +381,82 @@ const  updateUserCoverImage = asyncHandler(async (req,res) => {
 })
 
 
+ const getUserChannelProfile = asyncHandler(async (req,res) => {
+      const {username} = req.params
+
+      if (!username?.trim()) {
+         throw new ApiError(400,"username is missing")
+      }
+
+     const channel = await User.aggregate([
+        {
+            $match:  {
+                username : username?.toLowerCase()
+            }
+        },
+        {
+            $lookup : {  //count subscribers of channel
+                from : "subscriptions",
+                localField : "_id",
+                foreignField : "channel",
+                as : "subscribers" 
+            }
+        },
+        {
+            $lookup : { //count chnnels which subscribed by user
+                from : "subscriptions",
+                localField : "_id",
+                foreignField : "subscriber",
+                as : "subscribedTo"
+            }
+        },
+        {
+            $addFields : {
+                subscriberesCount : {
+                    $size : "$subscribers"
+                },
+                channelSubscribedToCount : {
+                    $size : "$subscribedTo"
+                },
+                isSubscribed : {
+                    $cond: {
+                        if : {$in : [req.user?._id, "$subscribers.subscriber"]},
+                        then : true,
+                        else : false 
+                    }
+                }
+            }
+        },
+        {
+            $project : {
+                fullName : 1,
+                username : 1,
+                subscriberesCount :1,
+                channelSubscribedToCount : 1,
+                isSubscribed : 1,
+                avatar : 1,
+                CoverImage : 1,
+                email : 1,
+                createdAt : 1,
+            }
+        }
+     ])
+     console.log(channel);
+
+       if (!channel?.length) {
+              throw new ApiError(404,"Channel Does Not Exists")
+       }
+
+      return res
+      .status(200)
+      .json(
+        new ApiResponse(200,channel[0],"User Channel profile fetched successfully")
+      ) 
+ })
+
+ 
+  
+
 export {
      registerUser,
      loginUser,
@@ -391,5 +466,6 @@ export {
      getCurrentUser,
      updateAccountDetails,
      updateUserAvatar,
-     updateUserCoverImage
+     updateUserCoverImage,
+     getUserChannelProfile
 };     
