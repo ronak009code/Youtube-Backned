@@ -381,17 +381,16 @@ const  updateUserCoverImage = asyncHandler(async (req,res) => {
 
 })
 
-
+// Function/Method to get user channel profile
  const getUserChannelProfile = asyncHandler(async (req,res) => {
-      const {username} = req.params
-
+      const {username} = req.params  // get username from request params
       if (!username?.trim()) {
          throw new ApiError(400,"username is missing")
       }
 
-     const channel = await User.aggregate([
+     const channel = await User.aggregate([ // aggregate pipeline to fetch user channel profile
         {
-            $match:  {
+            $match:  {  // match user by username
                 username : username?.toLowerCase()
             }
         },
@@ -412,7 +411,7 @@ const  updateUserCoverImage = asyncHandler(async (req,res) => {
             }
         },
         {
-            $addFields : {
+            $addFields : { // add fields to user object
                 subscriberesCount : {
                     $size : "$subscribers"
                 },
@@ -429,7 +428,7 @@ const  updateUserCoverImage = asyncHandler(async (req,res) => {
             }
         },
         {
-            $project : {
+            $project : {  // project the fields to return in response
                 fullName : 1,
                 username : 1,
                 subscriberesCount :1,
@@ -456,28 +455,29 @@ const  updateUserCoverImage = asyncHandler(async (req,res) => {
  })
 
  
+ // Function/Method to get watch history of user
  const getWatchHistory = asyncHandler(async (req,res ) => {
-    const user = await User.aggregate([
+    const user = await User.aggregate([  // aggregate pipeline to fetch watch history of user
         {
-            $match: {
+            $match: { // match user by _id
                 _id: new mongoose.Types.ObjectId(req.
                     user._id)
             }
         },
         {
-            $lookup: {
+            $lookup: {   // lookup to fetch watch history from videos collection
                 from: "videos",
                 localField:"watchHistory",
                 foreignField:"_id",
                 as : "watchHistory",
-                pipeline : [
+                pipeline : [   // pipeline to fetch only required fields from videos collection
                     {
-                        $lookup: {
+                        $lookup: {  // lookup to fetch owner details from users collection
                             from : "users",
                             localField : "owner",
                             foreignField : "_id",
                             as : "owner",
-                            pipeline : [
+                            pipeline : [   // pipeline to fetch only required fields from users collection
                                 {
                                     $project: {
                                         fullName:1,
@@ -489,7 +489,7 @@ const  updateUserCoverImage = asyncHandler(async (req,res) => {
                         }
                     },
                     {
-                        $addFields:{
+                        $addFields:{     // add fields to video object
                             owner: {
                                 $first: "$owner"
                             }
@@ -499,8 +499,7 @@ const  updateUserCoverImage = asyncHandler(async (req,res) => {
             }
         }
     ])
-
-    return res
+    return res   // send response to frontend
     .status(200)
     .json(
         new ApiResponse(
