@@ -249,11 +249,11 @@ const refreshAccessToken = asyncHandler(async (req,res) => {
 
 // Function/Method to change current user's password
 const changeCurrentPassword = asyncHandler(async (req,res) => {
-    const {oldpassword , newPassword} = req.body  // get old and new password from request body
+    const {oldPassword , newPassword} = req.body  // get old and new password from request body
 
     const user = await User.findById(req.user?._id)
 
-    const isPasswordcorrect = await user.isPasswordCorrect(oldpassword) // check if old password is correct or not
+    const isPasswordcorrect = await user.isPasswordCorrect(oldPassword) // check if old password is correct or not
 
     if (!isPasswordcorrect) {
         throw new ApiError(400, " Invalid old passworrd")
@@ -279,8 +279,8 @@ const getCurrentUser = asyncHandler(async (req,res) => {
     .json(new ApiResponse(
         200,
         req.user,
-        "Curent User Fetched Successfully"
-    ))
+        "Curent User Fetched Successfully",
+    ))   
 })
 
 // Function/Method to update current user's account details
@@ -309,6 +309,12 @@ const updateAccountDetails = asyncHandler(async (req,res) =>{
 
 // Function/Method to update current user's avatar
 const  updateUserAvatar = asyncHandler(async (req,res) => {
+   const existingUser = await User.findById(req.user._id)
+   console.log("exsisting user",existingUser.avatar.public_id)
+   
+   const oldAvatar = existingUser.avatar.public_id
+
+
     const avatarlocalpath = req.file?.path // fetch avatar local path from request file
 
     if (!avatarlocalpath) {
@@ -330,11 +336,14 @@ const  updateUserAvatar = asyncHandler(async (req,res) => {
     },
     {new : true} // to return the updated user object
     ).select("-password")
-
-    // old avatar delete logic // optionally add by me
+      
+      
+    // old avatar delete logic 
       try {
-        if (user.avatar?.public_id) {
-          await cloudinary.uploader.destroy(user.avatar.public_id);
+        console.log("old Avatar deleting",oldAvatar);
+        
+        if (oldAvatar) {
+          await cloudinary.uploader.destroy(oldAvatar);
        }
       } catch (error) {
         throw new ApiError(500," Error While Deletng the Old Avatar");
@@ -363,11 +372,11 @@ const  updateUserCoverImage = asyncHandler(async (req,res) => {
          throw new ApiError(400,"Error while uploading on coverIamge")
      }
 
-     await User.findByIdAndUpdate(
+     const user = await User.findByIdAndUpdate(
        req.user?._id,
       {
         $set : {
-            coverImage : coverimage.url
+            CoverImage : coverimage.url
         }
        },
        {new : true}
@@ -510,6 +519,7 @@ const  updateUserCoverImage = asyncHandler(async (req,res) => {
     )
  }) 
 
+ 
 export {
      registerUser,
      loginUser,
