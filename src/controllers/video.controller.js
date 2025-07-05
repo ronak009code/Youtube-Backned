@@ -96,7 +96,6 @@ const getAllVideos = asyncHandler(async(req,res) => {
 
 })
 
-
 //get video, upload to cloudinary,create vidoe
 const publishVideo = asyncHandler(async(req,res) => {
      const {title,description } = req.body // fetch the data from body
@@ -163,7 +162,134 @@ const publishVideo = asyncHandler(async(req,res) => {
       .json(new ApiResponse(200,video,"Video Uploded Successfully"))
 })
 
+// fetch the video by id and show to the user
+const getVideoById = asyncHandler(async(req,res) => {
+     const { videoId } = req.params // fetch id from params
+
+     if (!isValidObjectId(videoId)) { // match in database is id exists or not
+        throw new ApiError(400,"Invalid VideoId")
+     }
+
+     const video = await Video.aggregate([  // create pipline for video
+         {
+            $match:{  // match in mongoose
+                _id:new mongoose.Types.ObjectId(videoId)
+            }
+         },
+         {
+            $lookup:{
+                from: "likes",
+                localField: "_id",
+                foreignField: "video",
+                as: "likes"
+            }
+         },
+         {
+            $lookup:{
+                from:"users",
+                localField:"owner",
+                foreignField:"_id",
+                as: "owner",
+                pipeline:[
+                    {
+                        $lookup:{
+                            from:"subscriptions",
+                            localField:"_id",
+                            foreignField:"channel",
+                            as:"subscribers"
+                        }
+                    },
+                    {
+                        $addFields:{
+                            subscriberscount:{
+                                $size:"$subscribers"
+                            },
+                            isSubscribed:{
+                                $cond:{
+                                    if:{
+                                        $in:[
+                                            req.user?._id,
+                                            "$subscribers.subscriber"
+                                        ]
+                                    },
+                                    then:true,
+                                    else:false
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $project:{
+                            username:1,
+                            "avatar.url":1,
+                            subscriberscount:1,
+                            isSubscribed:1
+                        }
+                    }
+                ]  
+            }
+         },
+         {
+            $addFields:{
+                likesCount:{
+                    $size:"$likes"
+                },
+                owner:{
+                    $first:"$owner"
+                },
+                isLiked: {
+                    $cond:{
+                        if:{$in:[req.user?._id,"$liked.likedBy"]},
+                        then:true,
+                        else:false
+                    }
+                }
+            }
+         },
+         {
+            $project:{
+                "videoFile.url":1,
+                title:1,
+                description:1,
+                views:1,
+                createdAt:1,
+                duration:1,
+                comment:1,
+                owner:1,
+                likesCount:1,
+                isLiked:1
+            }
+         }
+     ]);
+
+   if (!video) {
+       throw new ApiError(500,"failed to fetch video")
+   }
+
+   await Video.findByIdAndUpdate(videoId,{ // increment the views in database
+      $inc: {
+        views:1
+      }
+   })
+
+   await User.findByIdAndUpdate(req.user?._id,{ // fill videoid in watchhistory
+       $addToSet:{
+          watchHistory: videoId
+       }
+   });
+
+   return res
+   .status(200)
+  .json(
+    new ApiResponse(200,video[0],"Video Details Fetched Successfully!!")
+  )
+
+})
+
+
+
 export {
     getAllVideos,
-    publishVideo
+    publishVideo,
+    getVideoById
 }
