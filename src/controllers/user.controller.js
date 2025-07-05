@@ -1,7 +1,7 @@
 import { asyncHandler} from '../utills/asyncHandler.js';
 import { ApiError } from '../utills/apiError.js';
 import { User} from "../Models/user.models.js";
-import { uploadonCloudinary } from '../utills/cloudinary.js';
+import { uploadonCloudinary,deleteOnCloudinary } from '../utills/cloudinary.js';
 import { ApiResponse } from '../utills/ApiResponse.js';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
@@ -309,12 +309,7 @@ const updateAccountDetails = asyncHandler(async (req,res) =>{
 
 // Function/Method to update current user's avatar
 const  updateUserAvatar = asyncHandler(async (req,res) => {
-   const existingUser = await User.findById(req.user._id)
-   console.log("exsisting user",existingUser.avatar.public_id)
    
-   const oldAvatar = existingUser.avatar.public_id
-
-
     const avatarlocalpath = req.file?.path // fetch avatar local path from request file
 
     if (!avatarlocalpath) {
@@ -327,7 +322,11 @@ const  updateUserAvatar = asyncHandler(async (req,res) => {
     throw new ApiError(400,"Error while uploading on avatar")
    }
 
-   const user = await User.findByIdAndUpdate(
+   const user = await User.findById(req.user._id).select("avatar")
+
+   const oldAvatarDelete = user.avatar.public_id;
+
+   const updateUser = await User.findByIdAndUpdate(
       req.user?._id,  // set new avatar url to user object
         {
              $set : {
@@ -337,23 +336,15 @@ const  updateUserAvatar = asyncHandler(async (req,res) => {
     {new : true} // to return the updated user object
     ).select("-password")
       
+    if (oldAvatarDelete && updateUser.avatar.public_id) {
+         await deleteOnCloudinary(oldAvatarDelete);
+    }
       
-    // old avatar delete logic 
-      try {
-        console.log("old Avatar deleting",oldAvatar);
-        
-        if (oldAvatar) {
-          await cloudinary.uploader.destroy(oldAvatar);
-       }
-      } catch (error) {
-        throw new ApiError(500," Error While Deletng the Old Avatar");
-      }
-
 
  return res
   .status(200)
   .json(
-    new ApiResponse(200, user,"avatar updated successfully")
+    new ApiResponse(200, updateUser,"avatar updated successfully")
   )
 })
 

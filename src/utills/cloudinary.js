@@ -1,6 +1,7 @@
 import "dotenv/config";
 import {v2 as cloudinary} from "cloudinary";
 import fs from "fs";
+import { ApiError } from "./apiError.js";
 
       
     // Configuration
@@ -29,4 +30,21 @@ const uploadonCloudinary = async (localfilePath) => {
           return null;
     }
 }
-export { uploadonCloudinary }
+
+const deleteOnCloudinary = async(public_id,resource_type="image") =>{
+    try {
+        if (!public_id) return null
+
+        //delete from cloudinary
+        const result = await cloudinary.uploader.destroy(public_id,{
+            resource_type:`${resource_type}`
+        });
+            
+    } catch (error) {
+        throw new ApiError(400,"something wrong while deleting the old avatar")
+    }
+}
+export {
+     uploadonCloudinary,
+     deleteOnCloudinary
+     }
