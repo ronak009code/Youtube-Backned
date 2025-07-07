@@ -31,7 +31,7 @@ const uploadonCloudinary = async (localfilePath) => {
     }
 }
 
-const deleteOnCloudinary = async(public_id,resource_type="image") =>{
+const deleteOnCloudinary = async(public_id,resource_type="image") => {
     try {
         if (!public_id) return null
 
