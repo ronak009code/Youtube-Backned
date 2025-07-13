@@ -19,6 +19,10 @@ app.use(cookieParser())
 //routes import
 import  userRouter from "./Routes/user.routes.js";
 import videoRouter from "./Routes/video.routes.js"
+import commentRouter from "./Routes/comment.routes.js"
+import likeRouter from "./Routes/like.routes.js";
+import subscriptionRouter from "./Routes/subscription.routes.js";
+import tweetRouter from "./Routes/tweet.routes.js";
 
 
 
@@ -29,8 +33,10 @@ import videoRouter from "./Routes/video.routes.js"
 //routes declaration
 app.use("/api/v1/users",userRouter)
 app.use("/api/v1/video",videoRouter)
-
-
+app.use("/api/v1/comment",commentRouter)
+app.use("/api/v1/likes",likeRouter)
+app.use("/api/v1/subscriptions",subscriptionRouter)
+app.use("/api/v1/tweet",tweetRouter)
 
 
 
