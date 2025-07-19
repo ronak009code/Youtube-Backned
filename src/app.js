@@ -25,7 +25,7 @@ import subscriptionRouter from "./Routes/subscription.routes.js";
 import tweetRouter from "./Routes/tweet.routes.js";
 import healthcheckRouter from "./Routes/healthcheck.routes.js"
 import playlistRouter from "./Routes/playlist.routes.js"
-
+import dashboardRouter from "./Routes/dashboard.routes.js";
 
 // http://localhost:5000/api/v1/users/register
 
@@ -39,5 +39,6 @@ app.use("/api/v1/subscriptions",subscriptionRouter)
 app.use("/api/v1/tweet",tweetRouter)
 app.use("/api/v1/healthcheck",healthcheckRouter)
 app.use("/api/v1/playlist",playlistRouter)
+app.use("/api/v1/dashboard",dashboardRouter)
 
 export { app }
