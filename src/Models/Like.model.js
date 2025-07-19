@@ -1,5 +1,5 @@
 import mongoose , {Schema} from "mongoose";
-import { Comment } from "./comment.model";
+import { Comment } from "./comment.model.js";
 
 
 
