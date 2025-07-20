@@ -29,7 +29,7 @@ const createTweet = asyncHandler( async (req,res) => {
 })
 
 // method for updating a tweet
-const upldateTweet = asyncHandler( async (req,res) => {
+const updateTweet = asyncHandler( async (req,res) => {
     const { content } = req.body;
     const { tweetId } = req.params; //fetch id from params
 
@@ -155,7 +155,7 @@ const getUserTweets = asyncHandler( async (req,res) => {
                 },
                 isLiked: {
                     $cond: {
-                        if: {$in: [req.user?._id,"$likedDetails.likedBy"]},
+                        if: {$in: [req.user?._id,"$likeDetails.likedBy"]},
                         then:true,
                         else:false
                     }
@@ -184,7 +184,7 @@ const getUserTweets = asyncHandler( async (req,res) => {
 
 export {
     createTweet,
-    upldateTweet,
+    updateTweet,
     deleteTweet,
     getUserTweets
 }

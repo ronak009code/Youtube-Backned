@@ -137,7 +137,7 @@ const getLikedVideos = asyncHandler(async (req,res) => {
             }
         },
         {
-            $unwind:"likedVideo",
+            $unwind:"$likedVideo",
         },
         {  
             $sort: {  // newset Liked videos shows first
