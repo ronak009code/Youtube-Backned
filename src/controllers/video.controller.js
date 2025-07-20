@@ -107,8 +107,8 @@ const publishVideo = asyncHandler(async(req,res) => {
 
        
       // fetch the path from req.files 
-     const videoFileLocalPath = req.files?.videofile[0].path;
-     const thumbnailLocalPath = req.files?.thumbnail[0].path;
+     const videoFileLocalPath = req.files?.videoFile?.[0].path;
+     const thumbnailLocalPath = req.files?.thumbnail?.[0].path;
   
      // check if path is fetched or not
      if (!videoFileLocalPath) {
@@ -137,7 +137,7 @@ const publishVideo = asyncHandler(async(req,res) => {
          title,
          description,
          duration: videoFile.duration,
-         videofile:{
+         videoFile:{
             url: videoFile.url,
             public_id: videoFile.public_id
          },
