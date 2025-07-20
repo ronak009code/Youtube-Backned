@@ -49,7 +49,7 @@ const getVideoComments = asyncHandler( async (req,res) => {
                 },
                 isLiked:{
                     $cond:{
-                        if:{ $in: [req.user?._id, " $likes.likedBy"] },
+                        if:{ $in: [req.user?._id, "$likes.likedBy"] },
                         then:true,
                         else:false
                     }
@@ -65,7 +65,7 @@ const getVideoComments = asyncHandler( async (req,res) => {
             $project: {
                 content:1,
                 createdAt:1,
-                likedCount:1,
+                likesCount:1,
                 owner: {
                     username:1,
                     fullName:1,
