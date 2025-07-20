@@ -10,7 +10,7 @@ import { text } from "express"
 
 // get all videos based on query,sort and pagination
 const getAllVideos = asyncHandler(async(req,res) => {
-    const {page=1,limit=10,query,sortBy,userId} = req.query
+    const {page=1,limit=10,query,sortBy,sortType,userId} = req.query
     console.log(userId);
     const pipeline = [];
     
@@ -53,7 +53,7 @@ const getAllVideos = asyncHandler(async(req,res) => {
    // sortType can be ascending(-1) or descending(1)
 
    if(sortBy && sortType){
-    pipeline:push({
+    pipeline.push({
         $sort: { 
             [sortBy]: sortType === "asc"? 1:-1
         }
@@ -65,16 +65,16 @@ const getAllVideos = asyncHandler(async(req,res) => {
    pipeline.push({
        $lookup: {
         from:"users",
-        localfield: "owner",
+        localField: "owner",
         foreignField: "_id",
-        as: "ownerDetaills",
-        pipeline: {
+        as: "ownerDetails",
+        pipeline: [{
             $project:{
                 username:1,
                 "avatar.url":1
             }
-         }
-    }
+         }],
+    },
    },
       {
        $unwind: "$ownerDetails"
@@ -210,7 +210,7 @@ const getVideoById = asyncHandler(async(req,res) => {
                                         $in:[
                                             req.user?._id,
                                             "$subscribers.subscriber"
-                                        ]
+                                        ],
                                     },
                                     then:true,
                                     else:false
@@ -239,7 +239,7 @@ const getVideoById = asyncHandler(async(req,res) => {
                 },
                 isLiked: {
                     $cond:{
-                        if:{$in:[req.user?._id,"$liked.likedBy"]},
+                        if:{$in:[req.user?._id,"$likes.likedBy"]},
                         then:true,
                         else:false
                     }
