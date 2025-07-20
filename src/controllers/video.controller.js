@@ -417,7 +417,7 @@ const togglePublishStatus = asyncHandler(async (req,res) => {
     }
     
     // match both owner and video status
-    if (video?.owner.toString() !== req.user?._id) {
+    if (video?.owner.toString() !== req.user?._id.toString()) {
          throw new ApiError(400,"you cant toggle publish status as you are not the owner") 
     }
 
