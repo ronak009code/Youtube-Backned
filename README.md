@@ -1,6 +1,6 @@
 # YouTube Backend
 
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/ronak009code/Youtube-Backned)
+
 
 This repository contains the backend service for a YouTube-like application. It's built with Node.js, Express, and MongoDB, providing a robust set of APIs for user management, video handling, social interactions, and more.
 
